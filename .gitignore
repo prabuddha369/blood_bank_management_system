@@ -1,0 +1,56 @@
+# Ignore the virtual environment folder in the backend
+backend/.venv/
+
+# Ignore Python compiled files in the backend
+backend/*.pyc
+backend/__pycache__/
+
+# Ignore Django migrations
+backend/**/migrations/*.pyc
+backend/**/migrations/*.py
+
+# Ignore Django database files (if any)
+backend/db.sqlite3
+
+# Ignore environment variable files in the backend
+backend/.env
+
+# Ignore static and media files in the backend (if not versioned)
+backend/staticfiles/
+backend/media/
+
+# Ignore local settings files in the backend
+backend/local_settings.py
+
+# Ignore Node.js modules and build output in the frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Ignore environment variable files in the frontend
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Ignore logs and lock files in both backend and frontend
+*.log
+*.lock
+
+# Ignore IDE/editor specific files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore coverage reports
+coverage/
+coverage.*
+.nyc_output/
+
+# Ignore Jest testing files (if using Jest)
+jest/
