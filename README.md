@@ -5,7 +5,6 @@ A full-stack application for connecting hospitals and individual blood donors. T
 
 ## Project Structure
 
-```
 blood_bank_management_system/
 │
 ├── backend/bloodbank_backend/    # Django backend
@@ -20,7 +19,6 @@ blood_bank_management_system/
     ├── next.config.js     # Next.js configuration
     ├── package.json       # Node.js dependencies
     └── ...                # Other Next.js project files
-```
 
 ## Getting Started
 
