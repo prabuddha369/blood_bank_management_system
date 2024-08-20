@@ -13,7 +13,7 @@ backend/**/migrations/*.py
 backend/db.sqlite3
 
 # Ignore environment variable files in the backend
-backend/.env
+backend/bloodbank_backend/.env
 
 # Ignore static and media files in the backend (if not versioned)
 backend/staticfiles/

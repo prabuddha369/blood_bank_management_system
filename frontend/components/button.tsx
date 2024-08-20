@@ -9,18 +9,15 @@ const Button = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('authToken');
-        const Admintoken = localStorage.getItem('AdminAuthToken');
-        const flg = localStorage.getItem('authFlag');
-        if(flg == "True" ){
-        if (token === "mockTokenHospital" && Admintoken !== "mockTokenAdmin") {
+        if (token === "hospital") {
             setIsAuthenticated(1);
-        } else if (token === "mockTokenDonor" && Admintoken !== "mockTokenAdmin") {
+        } else if (token === "donor") {
             setIsAuthenticated(2);
-        } else if (Admintoken === "mockTokenAdmin" ) {
+        } else if (token === "admin" ) {
             setIsAuthenticated(0);
         } else {
             setIsAuthenticated(undefined);
-        }}
+        }
     }, []);
 
     const handleOpenModal = () => setIsModalOpen(true);

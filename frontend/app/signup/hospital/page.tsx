@@ -1,5 +1,5 @@
-'use client'
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+'use client';
+import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 
 interface FormData {
   hospitalName: string;
@@ -20,6 +20,26 @@ const Page: React.FC = () => {
     confirmPassword: '',
   });
 
+  const [verificationCode, setVerificationCode] = useState<string>('');
+  const [showVerificationPopup, setShowVerificationPopup] = useState<boolean>(false);
+  const [resendEnabled, setResendEnabled] = useState<boolean>(false);
+  const [countdown, setCountdown] = useState<number>(300);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+
+    if (countdown > 0 && !resendEnabled) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    } else if (countdown === 0) {
+      setResendEnabled(true);
+      clearInterval(timer);
+    }
+
+    return () => clearInterval(timer);
+  }, [countdown, resendEnabled]);
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData((prevState) => ({
@@ -29,7 +49,6 @@ const Page: React.FC = () => {
   };
 
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
-    console.log(formData.emailAddress);
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
@@ -37,14 +56,80 @@ const Page: React.FC = () => {
       return;
     }
 
-    const userToken = 'mockTokenHospital';
-    localStorage.setItem('authFlag', "True");
-    localStorage.setItem('authToken', userToken);
-    localStorage.setItem('userName', formData.hospitalName);
-    localStorage.setItem('emailid', formData.emailAddress);
-    localStorage.setItem('password', formData.password);
+    fetch('http://localhost:8000/api/send_code/', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: formData.emailAddress
+      })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'Success') {
+          setShowVerificationPopup(true);
+          setCountdown(300);
+          setResendEnabled(false);
+        } else {
+          alert('An Error Occurred! Please Try Again...');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  };
 
-    window.location.href = '/';
+  const handleVerificationSubmit = () => {
+    fetch('http://localhost:8000/api/register/hospital/', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: formData.emailAddress,
+        password: formData.password,
+        code: verificationCode,
+        name: formData.hospitalName,
+        type: 'hospital',
+        phoneNumber: formData.phoneNumber,
+        address: formData.hospitalAddress,
+      }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'Success') {
+          localStorage.setItem('authToken', 'hospital');
+          localStorage.setItem('username', formData.hospitalName);
+          window.location.href = '/';
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  };
+
+  const handleResendCode = () => {
+    fetch('http://localhost:8000/api/send_code/', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: formData.emailAddress
+      })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'Success') {
+          setCountdown(300);
+          setResendEnabled(false);
+        } else {
+          alert('An Error Occurred! Please Try Again...');
+        }
+      })
+      .catch(error => console.error('Error:', error));
   };
 
   return (
@@ -99,7 +184,7 @@ const Page: React.FC = () => {
             </label>
             <input
               type='email'
-              id='emailAddress' 
+              id='emailAddress'
               className='w-full px-4 py-2 mt-1 border rounded-md outline-none focus:ring-2 focus:ring-[#610834]'
               placeholder='Enter Email Address'
               value={formData.emailAddress}
@@ -140,6 +225,48 @@ const Page: React.FC = () => {
           </button>
         </form>
       </div>
+      {showVerificationPopup && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center'>
+          <div className='bg-white p-8 rounded-lg shadow-lg text-center relative'>
+            <button
+              onClick={() => setShowVerificationPopup(false)}
+              className='absolute top-2 right-2 text-black hover:text-gray-600'
+            >
+              &times;
+            </button>
+            <h2 className='text-2xl font-bold mb-4'>Email Sent</h2>
+            <p className='mb-4 text-black'>
+              A verification code has been sent to {formData.emailAddress}. Please
+              enter it below:
+            </p>
+            <input
+              type='text'
+              maxLength={6}
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+              className='w-full text-black px-4 py-2 border rounded-md outline-none focus:ring-2 focus:ring-[#610834] mb-4'
+              placeholder='Enter Verification Code'
+            />
+            <button
+              onClick={handleVerificationSubmit}
+              className='px-6 py-2 text-white bg-[#610834] rounded-md hover:bg-[#B32346]'
+            >
+              Verify Code
+            </button>
+            <p className='mt-4'>
+              {countdown > 0 ? `Resend code in ${Math.floor(countdown / 60)}:${countdown % 60}` : 
+                resendEnabled ? (
+                  <button onClick={handleResendCode} className='text-[#610834] underline'>
+                    Resend Code
+                  </button>
+                ) : (
+                  'Resend code option will be available soon.'
+                )
+              }
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

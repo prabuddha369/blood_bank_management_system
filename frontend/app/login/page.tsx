@@ -42,36 +42,26 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    const storedHospitalEmail = localStorage.getItem('emailid');
-    const storedHospitalPassword = localStorage.getItem('password');
-
-    const donorData = localStorage.getItem('donor_data');
-    if (donorData) {
-      const donors: Donors = JSON.parse(donorData);
-      const donor = donors[formData.emailAddress];
-
-      if (donor && donor.password === formData.password) {
-        donor.authFlg = true;
-
-        localStorage.setItem('donor_data', JSON.stringify(donors));
-
-        localStorage.setItem('authFlag', "True");
-        localStorage.setItem('authToken', 'mockTokenDonor');
-
-
-        window.location.href = '/';
-      }
-      else if (formData.emailAddress == storedHospitalEmail && formData.password == storedHospitalPassword) {
-        localStorage.setItem('authFlag', "True");
-        localStorage.setItem('authToken', 'mockTokenHospital');
-        window.location.href = '/';
-      }
-      else {
-        alert('Invalid credentials!');
-      }
-    } else {
-      alert('No donor data found!');
-    }
+    fetch('http://localhost:8000/api/login/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: formData.emailAddress,
+        password: formData.password,
+      })
+    })
+    .then(response => response.json())
+      .then(data => {
+        if (data.status === 'Login successful') {
+          localStorage.setItem('authToken', data.user_type)
+          localStorage.setItem('username', data.user_name)
+          window.location.href = '/';
+        } else {
+          alert('Error: ' + 'Invalid Credentials');
+        }})
+      .catch(error => alert('Error: Network Issue!'));
   };
 
   return (
