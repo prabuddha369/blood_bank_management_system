@@ -19,7 +19,7 @@ blood_bank_management_system/
     ├── next.config.js     # Next.js configuration
     ├── package.json       # Node.js dependencies
     └── ...                # Other Next.js project files
-
+   ```
 ## Getting Started
 
 ### Prerequisites
